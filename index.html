@@ -74,7 +74,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <body>
 <div class="app-card" id="app">
 
-<!-- SIGNUP -->
 <div id="screen-signup" class="screen active">
 <h1>SpeakEasy <span>lawful</span></h1>
 <div class="subhead">Learn English with clear, revocable permissions.</div>
@@ -94,7 +93,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="text-center mt-2"><span class="text-muted">Already have an account? </span><span class="link" id="go-login">Log in</span></div>
 </div>
 
-<!-- LOGIN -->
 <div id="screen-login" class="screen">
 <h1>Welcome back</h1>
 <div class="subhead">Log in to continue learning.</div>
@@ -107,7 +105,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="text-center"><span class="link link-admin" id="go-admin-login">🔐 Admin login</span></div>
 </div>
 
-<!-- ADMIN LOGIN -->
 <div id="screen-admin-login" class="screen">
 <h1>Admin <span class="admin-badge">restricted</span></h1>
 <div class="subhead" style="border-left-color:#b45309;">Admin panel access. Authorized personnel only.</div>
@@ -119,7 +116,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="text-center mt-2"><span class="text-muted">Back to </span><span class="link" id="admin-go-user-login">user login</span></div>
 </div>
 
-<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
 <div class="flex-between">
 <h1 style="font-size:1.6rem;">SpeakEasy</h1>
@@ -136,7 +132,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="small-note"><strong>Privacy notice:</strong> Audio and video are processed only during the session. No recordings are stored on our servers unless you explicitly save a clip. Location is never requested for this app.</div>
 </div>
 
-<!-- MIC -->
 <div id="screen-mic" class="screen">
 <div class="flex-between">
 <h1 style="font-size:1.6rem;">🎤 Pronunciation practice</h1>
@@ -162,7 +157,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="small-note">You can also revoke microphone permission from the <span class="link" id="mic-perm-link">Permission Manager</span> at any time.</div>
 </div>
 
-<!-- VIDEO -->
 <div id="screen-video" class="screen">
 <div class="flex-between">
 <h1 style="font-size:1.6rem;">📹 Video conversation</h1>
@@ -191,7 +185,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="small-note">You can revoke camera or microphone permission from the <span class="link" id="video-perm-link">Permission Manager</span> at any time.</div>
 </div>
 
-<!-- PERMISSIONS -->
 <div id="screen-permissions" class="screen">
 <div class="flex-between">
 <h1 style="font-size:1.6rem;">⚙️ Permission manager</h1>
@@ -203,7 +196,6 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 <div class="small-note">Under the DPDP Act 2023, you have the right to withdraw consent at any time. Withdrawal is as simple as granting. We stop processing immediately.</div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
 <div id="screen-admin-dashboard" class="screen">
 <div class="flex-between">
 <h1 style="font-size:1.6rem;">🔐 Admin panel <span class="admin-badge">admin</span></h1>
@@ -220,9 +212,10 @@ input:focus,select:focus{border-color:#1a5cff;box-shadow:0 0 0 4px rgba(26,92,25
 </div>
 
 <script>
+(function(){
 const SUPABASE_URL='https://lmcrbhatzrjdpwnnrdoe.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtY3JiaGF0enJqZHB3bm5yZG9lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MDU5MzksImV4cCI6MjExMDA4MTkzOX0.Q_hHIMCROWa4yzFkZZLLgqxfQw2lIralmzbaihFWERE';
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 let currentUser=null,isAdmin=false;
 let micStream=null,camStream=null,micActive=false,camActive=false;
@@ -247,12 +240,12 @@ if(name==='adminDashboard')loadAdminUsers();
 }
 
 async function checkAdminRole(userId){
-const{data,error}=await supabase.from('profiles').select('role').eq('id',userId).single();
+const{data,error}=await client.from('profiles').select('role').eq('id',userId).single();
 if(error||!data)return false;
 return data.role==='admin';
 }
 
-supabase.auth.onAuthStateChange(async(event,session)=>{
+client.auth.onAuthStateChange(async(event,session)=>{
 if(session&&session.user){
 currentUser=session.user;
 isAdmin=await checkAdminRole(session.user.id);
@@ -263,7 +256,7 @@ showScreen('signup');
 }
 });
 
-supabase.auth.getSession().then(async({data:{session}})=>{
+client.auth.getSession().then(async({data:{session}})=>{
 if(session){
 currentUser=session.user;
 isAdmin=await checkAdminRole(session.user.id);
@@ -289,10 +282,10 @@ if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email.'
 if(!password||password.length<6){errEl.textContent='Password must be at least 6 characters.';return;}
 if(!consent){errEl.textContent='Please confirm you understand the permission model.';return;}
 btn.disabled=true;btn.textContent='Creating account...';
-const{data,error}=await supabase.auth.signUp({email,password});
+const{data,error}=await client.auth.signUp({email,password});
 btn.disabled=false;btn.textContent='Create account';
 if(error){errEl.textContent=error.message;return;}
-if(data.user){await supabase.from('profiles').update({minor}).eq('id',data.user.id);}
+if(data.user){await client.from('profiles').update({minor}).eq('id',data.user.id);}
 if(!data.session){errEl.textContent='Account created! Please check your email to confirm before logging in.';}
 });
 
@@ -304,7 +297,7 @@ const errEl=document.getElementById('login-error');
 errEl.textContent='';
 if(!email||!password){errEl.textContent='Enter email and password.';return;}
 btn.disabled=true;btn.textContent='Logging in...';
-const{error}=await supabase.auth.signInWithPassword({email,password});
+const{error}=await client.auth.signInWithPassword({email,password});
 btn.disabled=false;btn.textContent='Log in';
 if(error){errEl.textContent=error.message;}
 });
@@ -317,13 +310,13 @@ const errEl=document.getElementById('admin-login-error');
 errEl.textContent='';
 if(!email||!password){errEl.textContent='Enter admin email and password.';return;}
 btn.disabled=true;btn.textContent='Verifying...';
-const{data,error}=await supabase.auth.signInWithPassword({email,password});
+const{data,error}=await client.auth.signInWithPassword({email,password});
 btn.disabled=false;btn.textContent='Login as admin';
 if(error){errEl.textContent=error.message;return;}
 const admin=await checkAdminRole(data.user.id);
 if(!admin){
 errEl.textContent='This account does not have admin role.';
-await supabase.auth.signOut();
+await client.auth.signOut();
 }
 });
 
@@ -334,18 +327,18 @@ document.getElementById('admin-go-user-login').addEventListener('click',()=>show
 
 document.getElementById('btn-logout').addEventListener('click',async function(){
 stopMic();stopCam();
-await supabase.auth.signOut();
+await client.auth.signOut();
 });
 
 document.getElementById('btn-admin-logout').addEventListener('click',async function(){
-await supabase.auth.signOut();
+await client.auth.signOut();
 });
 
 async function loadAdminUsers(){
 const container=document.getElementById('admin-users-container');
 const countEl=document.getElementById('admin-user-count');
 container.innerHTML='<div class="loading-text">Loading users...</div>';
-const{data,error}=await supabase.from('profiles').select('id,email,role,minor,created_at').order('created_at',{ascending:false});
+const{data,error}=await client.from('profiles').select('id,email,role,minor,created_at').order('created_at',{ascending:false});
 if(error){container.innerHTML=`<div class="error-msg">Error loading users: ${error.message}</div>`;return;}
 if(!data||data.length===0){container.innerHTML='<div class="loading-text">No users found.</div>';countEl.textContent='0';return;}
 countEl.textContent=data.length;
@@ -505,6 +498,7 @@ document.getElementById('btn-video-back').addEventListener('click',()=>{stopCam(
 document.getElementById('btn-perm-back').addEventListener('click',()=>showScreen('dashboard'));
 
 showScreen('signup');
+})();
 </script>
 </body>
 </html>
